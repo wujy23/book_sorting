@@ -14,15 +14,17 @@ if __name__ == "__main__":
     orders = orders.apply(lambda x: x.dropna().tolist(), axis=1) #消除空格
     orders = orders.to_list()
     
-    A_matrix = get_matrix(orders,SKU)  #get_matrix 要求orders为list
+    Valuable_orders,A_matrix = get_matrix(orders,SKU)  #get_matrix 要求orders为list
+                                      #A_matrix : ndarray,A[i] 为第i个sku与其他商品的相似度向量，[[k,data]] k为sku下标，data为相似度值
 
-    orders = np.array(orders)            
-    L = np.array(get_mu(orders,SKU))
+    Valuable_orders = np.array(Valuable_orders)             
+    L = np.array(get_mu(Valuable_orders,SKU))
     
-    capacity = int(input("请输入单个货架容纳量：") ) 
+    capacity = 10
   #  capacity = 2
     distribution_score =  C_H(L, A_matrix, capacity) #dis_score 为三维数组，基本形式为：[ [[group_i],socre_i] ]
+   # print(distribution_score)
     
     output = pd.DataFrame(distribution_score)
     output.to_csv('distribution.csv')
-    
+     

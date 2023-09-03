@@ -22,32 +22,49 @@ def get_mu(orders,SKU): #用于更新mu值 orders 为二维数组，为订单集
     
     return Mu_i
 
-def close_th(matrix ,j ,centriod):
-    centriod = int(centriod)
-    if matrix[j][centriod] == 0:
-        return (matrix.shape[0] - 1)  #与质心相似度为0，输出排序为最后
+# def close_th(matrix ,j ,centriod):
+#     centriod = int(centriod)
+#     if matrix[j][centriod] == 0:
+#         return (matrix.shape[0] - 1)  #与质心相似度为0，输出排序为最后
     
-    rank = 1
-    for t in range(matrix.shape[0]):
-        if matrix[j][t] > matrix[j][centriod]:
-            rank += 1
+#     rank = 1
+#     for t in range(matrix.shape[0]):
+#         if matrix[j][t] > matrix[j][centriod]:
+#             rank += 1
     
-    return rank
+#     return rank  
+#当前矩阵不需要
         
-def get_closest(matrix , centroid):
-    closest = []
-    for i in range(matrix.shape[0]): #第 i 近
-        for j in range(matrix.shape[0]): # j 为遍历寻优的迭代变量
-            if np.all(matrix[j] == 0): continue
-            if close_th(matrix , j , centroid) == i:
+def get_closest(matrix , centroid,capacity):
+    closest = [] #matrix[centroid] 一定不为空 
+    for i in range(len(matrix)): #第 i 近
+        for j in range(len(matrix)): # j 为遍历寻优的迭代变量  
+            if i >= capacity:
+                break    
+            if matrix[j] == None:
+                continue
+            if len(matrix[j])  <= i:
+                continue            
+            if matrix[j][i][0] == centroid: #matrix的每一项都是排好序的，第i个元素一定第i大
                 closest.append(j)
         if  closest: #若集合不为空
-            return closest   
-        
-        
+            return closest      
+
 def matrix_update(matrix,del_element):
-    matrix[int(del_element),:] = 0
-    matrix[:,int(del_element)] = 0
+    for i in range(len(matrix)):
+        if matrix[i] == None:
+            continue
+        if i == del_element:
+            matrix[i] = None
+            continue
+#        temp_row = list(matrix[i])
+        for j in range(len(matrix[i])):
+            if matrix[i][j][0] == del_element:
+                if len(matrix[i]) == 1:
+                    matrix[i] == None
+                else :
+                    del matrix[i][j]
+                break
     return matrix
 
 def temp_L_update(temp_L,del_element):
@@ -66,7 +83,14 @@ def get_value(closest,L):
 def get_score(group,A_matrix):
     score = 0
     for i in range(len(group)):
-        score += A_matrix[int(group[0][0]),int(group[i][0])]     
+        if i == 0:
+            continue
+        
+        cur = int(group[i])
+        for j in range(len(A_matrix[cur])):
+            if A_matrix[cur][j][0] == group[0]:
+                score += A_matrix[cur][j][1]
+    
     return score
 
 def exchange(a,i,b,j):
@@ -75,6 +99,14 @@ def exchange(a,i,b,j):
     temp_a[i] = b[j]
     temp_b[j] = a[i]
     return temp_a,temp_b
+
+def sorted_matrix(matrix):
+    for i in range(len(matrix)):
+        if  matrix[i] == None:
+            continue
+        matrix[i] = sorted(matrix[i],key = lambda x : x[1],reverse=True)
+    return matrix
+
 
 # closest = np.array([3,2,1])
 # L = np.array([[2,11],[1,22],[4,33],[3,44]])
